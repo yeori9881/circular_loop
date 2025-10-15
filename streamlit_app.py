@@ -14,12 +14,12 @@ st.markdown("""
 # --- Sidebar: 변수 설정 ---
 st.sidebar.header("⚙️ 변수 설정")
 
-I = st.sidebar.number_input("전류 I (A)", min_value=0.1, max_value=10.0, value=2.0, step=0.1, format="%.1f")
-R = st.sidebar.number_input("코일 반지름 R (m)", min_value=0.1, max_value=2.0, value=0.5, step=0.1, format="%.1f")
+I = st.sidebar.number_input("전류 I (A)", min_value=0.01, max_value=10.0, value=2.0, step=0.01, format="%.2f")
+R = st.sidebar.number_input("코일 반지름 R (m)", min_value=0.01, max_value=2.0, value=0.50, step=0.01, format="%.2f")
 N = st.sidebar.number_input("코일 감은 수 N (회)", min_value=1, max_value=20, value=5, step=1, format="%d")
-x = st.sidebar.number_input("X 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.5, step=0.1, format="%.1f")
-y = st.sidebar.number_input("Y 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.0, step=0.1, format="%.1f")
-z = st.sidebar.number_input("Z 좌표 (m)", min_value=-1.0, max_value=1.0, value=0.0, step=0.1, format="%.1f")
+x = st.sidebar.number_input("X 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.50, step=0.01, format="%.2f")
+y = st.sidebar.number_input("Y 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.00, step=0.01, format="%.2f")
+z = st.sidebar.number_input("Z 좌표 (m)", min_value=-1.0, max_value=1.0, value=0.00, step=0.01, format="%.2f")
 
 mu0 = 4 * np.pi * 1e-7  # 진공 투자율
 
@@ -65,13 +65,12 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
 B_here, calc_steps, dl_positions, dB_vectors = Bz_point_verbose(x, y, z, I, R, N)
 
 # --- π 포함 식으로 변환 ---
-# B_here = 실제 계산값 (T)
-B_pi_factor = B_here / (np.pi * 1e-7)  # π × 10^-7 T 기준으로 몇 배인지
+B_pi_factor = B_here / (np.pi * 1e-7)  # π × 10^-7 T 기준
 B_display = f"{B_pi_factor:.3f} π × 10^-7 T"
 
 # --- 결과 ---
 st.markdown(f"### 📊 측정 결과")
-st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
+st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.2f}, {y:.2f}, {z:.2f}) m**")
 st.markdown(f"**Z축 방향 자기장 Bz ≈ {B_display}**")
 
 # --- 계산 과정 보기 ---
@@ -86,12 +85,12 @@ with st.expander("🔍 계산 과정 보기"):
 
 # --- 시각화 ---
 show_arrows = st.checkbox("💠 dl 소자 화살표 표시", value=True)
-matplotlib.use("Agg")  # non-interactive backend
+matplotlib.use("Agg")
 
 fig, ax = plt.subplots(figsize=(6,6))
 circle = plt.Circle((0,0), R, fill=False, color='orange', linewidth=2, label='코일')
 ax.add_patch(circle)
-ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.1f},{y:.1f}) m')
+ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.2f},{y:.2f}) m')
 
 if show_arrows:
     for (px, py), dBz in zip(dl_positions, dB_vectors):
