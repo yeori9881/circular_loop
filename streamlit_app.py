@@ -1,17 +1,18 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 
 st.set_page_config(page_title="원형 코일 2D 자기장 시뮬레이터", layout="wide")
 
-st.title("원형 코일 2D 자기장 시뮬레이터")
+st.title("🧲 원형 코일 2D 자기장 시뮬레이터")
 st.markdown("""
 마우스로 화면 위 위치를 선택하면 해당 지점에서의 자기장 세기를 계산합니다.  
 전류, 코일 반지름, 감은 수 조절 가능, dl 소자 화살표 ON/OFF, 계산 과정 확인 가능
 """)
 
 # --- Sidebar: 변수 설정 ---
-st.sidebar.header("변수 설정")
+st.sidebar.header("⚙️ 변수 설정")
 
 I = st.sidebar.number_input("전류 I (A)", min_value=0.1, max_value=10.0, value=2.0, step=0.1, format="%.1f")
 R = st.sidebar.number_input("코일 반지름 R (m)", min_value=0.1, max_value=2.0, value=0.5, step=0.1, format="%.1f")
@@ -20,9 +21,8 @@ x = st.sidebar.number_input("X 좌표 (m)", min_value=-2.0, max_value=2.0, value
 y = st.sidebar.number_input("Y 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.0, step=0.1, format="%.1f")
 z = st.sidebar.number_input("Z 좌표 (m)", min_value=-1.0, max_value=1.0, value=0.0, step=0.1, format="%.1f")
 
-# μ₀/4 계산 상수
-mu0_div_4 = 1e-7  # μ₀/4 계산 (실제 계산용)
-pi_symbol = "π"   # 계산 과정에서 문자로 표시
+# 진공 투자율
+mu0 = 4 * np.pi * 1e-7  # H/m
 
 # --- Biot-Savart 법칙 함수 ---
 def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
@@ -43,7 +43,7 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
         r_mag = np.linalg.norm(r_vec)
         if r_mag == 0:
             continue
-        dB = (mu0_div_4 * I) * np.cross(dl_vec, r_vec) / (r_mag**3)
+        dB = (mu0 * I / (4*np.pi)) * np.cross(dl_vec, r_vec) / (r_mag**3)
         Bz_total += dB[2]
 
         if i % max(1, n_elements // 10) == 0:
@@ -65,17 +65,21 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
 # --- 계산 ---
 B_here, calc_steps, dl_positions, dB_vectors = Bz_point_verbose(x, y, z, I, R, N)
 
+# --- 중앙 Z축 자기장 (π 포함) 계산 ---
+if x == 0 and y == 0 and z == 0:
+    # 중앙 계산 공식
+    B_center = f"{N} μ₀ I / (2) = {2*N*I}π × 10^-7 T"
+else:
+    B_center = f"{B_here:.3e} T (근사값)"
+
 # --- 결과 ---
-st.markdown(f"### 측정 결과")
+st.markdown(f"### 📊 측정 결과")
 st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
-st.markdown(
-    f"**Z축 방향 자기장 Bz ≈ {B_here:.3e} T ≈ {B_here/mu0_div_4:.2f} × 10⁻⁷ μ₀/4{pi_symbol}**"
-)
-st.caption("계산 과정에서는 μ₀/4π 형태로 표현, 실제 계산은 μ₀/4 = 1e-7로 수치 계산됨")
+st.markdown(f"**Z축 방향 자기장 Bz ≈ {B_center}**")
 
 # --- 계산 과정 보기 ---
-with st.expander("계산 과정 보기"):
-    st.markdown(f"**사용 공식:** Bz = Σ (μ₀ I / 4{pi_symbol}) * (dl × r) / |r|³  (Z축 방향만)")
+with st.expander("🔍 계산 과정 보기"):
+    st.markdown(f"**사용 공식:** dB = (μ₀ I / 4π) * (dl × r) / |r|³  (Z축 방향만)")
     st.markdown("**각 dl 소자가 선택 위치에서 만드는 Bz 계산 과정:**")
     for step in calc_steps:
         st.markdown(
@@ -85,6 +89,8 @@ with st.expander("계산 과정 보기"):
 
 # --- 시각화 ---
 show_arrows = st.checkbox("💠 dl 소자 화살표 표시", value=True)
+matplotlib.use("Agg")  # non-interactive backend
+
 fig, ax = plt.subplots(figsize=(6,6))
 circle = plt.Circle((0,0), R, fill=False, color='orange', linewidth=2, label='코일')
 ax.add_patch(circle)
@@ -103,10 +109,11 @@ ax.set_ylabel('Y (m)')
 ax.set_title("XY 평면: 원형 코일과 dl 소자가 만드는 Bz 화살표")
 ax.legend()
 ax.grid(True)
-st.pyplot(fig)
+
+st.pyplot(fig, use_container_width=True)
 
 # --- 공식과 개념 설명 ---
-with st.expander("관련 공식 및 개념 설명"):
+with st.expander("📝 관련 공식 및 개념 설명"):
     st.markdown("**1️⃣ 원형 코일 중심 Z축 자기장 공식**")
     st.markdown(
         "Bz = μ₀ I N R² / (2 (R² + z²)^(3/2))\n\n"
@@ -114,8 +121,7 @@ with st.expander("관련 공식 및 개념 설명"):
         "- I: 전류 (A)\n"
         "- N: 코일 감은 수\n"
         "- R: 코일 반지름 (m)\n"
-        "- z: 중심에서 떨어진 거리 (m)\n"
-        "- 중심에서의 자기장만 구하는 간단 공식"
+        "- z: 중심에서 떨어진 거리 (m)"
     )
 
     st.markdown("**2️⃣ Biot-Savart 법칙**")
