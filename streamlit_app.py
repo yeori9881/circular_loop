@@ -124,14 +124,6 @@ with st.expander("🔍 계산 과정 보기"):
             f"dBz={step['dBz']:.3e}"
         )
 
-# --- 시각화 ---
-show_arrows = st.checkbox("💠 dl 소자 화살표 표시", value=True)
-
-fig, ax = plt.subplots(figsize=(6,6))
-circle = plt.Circle((0,0), R, fill=False, color='orange', linewidth=2, label='코일')
-ax.add_patch(circle)
-ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.1f}, {y:.1f}) m')
-
 # 체크박스가 켜져 있을 때만 dl 화살표 표시
 if show_arrows:
     for (px, py), dBz in zip(dl_positions, dB_vectors):
