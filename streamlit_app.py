@@ -10,7 +10,7 @@ st.markdown("""
 전류, 코일 반지름, 감은 수를 조절할 수 있습니다.
 """)
 
-# --- Sidebar: 변수 설정 (슬라이더 + 직접 입력) ---
+# --- Sidebar: 변수 설정 ---
 st.sidebar.header("⚙️ 변수 설정")
 
 I = st.sidebar.number_input(
@@ -48,6 +48,8 @@ def Bz_point(x, y, z, I, R, N=1, n_elements=200):
     dly = R * np.cos(theta) * (2*np.pi/n_elements)
 
     Bz_total = 0.0
+    # 계산 과정 기록
+    calc_steps = []
     for i in range(n_elements):
         r_vec = np.array([x - rx[i], y - ry[i], z])
         dl_vec = np.array([dlx[i], dly[i], 0.0])
@@ -56,10 +58,12 @@ def Bz_point(x, y, z, I, R, N=1, n_elements=200):
             continue
         dB = (mu0 * I / (4*np.pi)) * np.cross(dl_vec, r_vec) / (r_mag**3)
         Bz_total += dB[2]
-    return Bz_total * N
+        if i % max(1, n_elements // 10) == 0:  # 일부 단계만 기록
+            calc_steps.append(f"i={i}, dl=({dlx[i]:.3e},{dly[i]:.3e},0), r=({r_vec[0]:.3f},{r_vec[1]:.3f},{r_vec[2]:.3f}), dBz={dB[2]:.3e}")
+    return Bz_total * N, calc_steps
 
 # --- 자기장 계산 ---
-B_here = Bz_point(x, y, z, I, R, N)
+B_here, calc_steps = Bz_point(x, y, z, I, R, N)
 
 # --- 시각화 ---
 fig, ax = plt.subplots(figsize=(6,6))
@@ -82,3 +86,10 @@ st.markdown(f"### 📊 측정 결과")
 st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
 st.markdown(f"**Z축 방향 자기장 Bz = {B_here:.3e} T**")
 st.caption("Biot-Savart 법칙을 수치적분으로 계산한 값")
+
+# --- 계산 과정 보기 ---
+with st.expander("🔍 계산 과정 보기"):
+    st.markdown("**사용된 공식:** Bz = Σ (μ₀ I / 4π) * (dl × r) / |r|³  (Z축 방향만)")
+    st.markdown("**계산 과정 일부:**")
+    for step in calc_steps:
+        st.text(step)
