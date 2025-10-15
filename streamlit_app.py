@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="원형 코일 2D 자기장 시뮬레이터", layout="wide")
 
-st.title("🧲 원형 코일 2D 자기장 시뮬레이터")
+st.title("원형 코일 2D 자기장 시뮬레이터")
 st.markdown("""
 마우스로 화면 위 위치를 선택하면 해당 지점에서의 자기장 세기를 계산합니다.  
 전류, 코일 반지름, 감은 수 조절 가능, dl 소자 화살표 ON/OFF, 계산 과정 확인 가능
 """)
 
 # --- Sidebar: 변수 설정 ---
-st.sidebar.header("⚙️ 변수 설정")
+st.sidebar.header("변수 설정")
 
 I = st.sidebar.number_input("전류 I (A)", min_value=0.1, max_value=10.0, value=2.0, step=0.1, format="%.1f")
 R = st.sidebar.number_input("코일 반지름 R (m)", min_value=0.1, max_value=2.0, value=0.5, step=0.1, format="%.1f")
@@ -66,7 +66,7 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
 B_here, calc_steps, dl_positions, dB_vectors = Bz_point_verbose(x, y, z, I, R, N)
 
 # --- 결과 ---
-st.markdown(f"### 📊 측정 결과")
+st.markdown(f"### 측정 결과")
 st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
 st.markdown(
     f"**Z축 방향 자기장 Bz ≈ {B_here:.3e} T ≈ {B_here/mu0_div_4:.2f} × 10⁻⁷ μ₀/4{pi_symbol}**"
@@ -74,7 +74,7 @@ st.markdown(
 st.caption("계산 과정에서는 μ₀/4π 형태로 표현, 실제 계산은 μ₀/4 = 1e-7로 수치 계산됨")
 
 # --- 계산 과정 보기 ---
-with st.expander("🔍 계산 과정 보기"):
+with st.expander("계산 과정 보기"):
     st.markdown(f"**사용 공식:** Bz = Σ (μ₀ I / 4{pi_symbol}) * (dl × r) / |r|³  (Z축 방향만)")
     st.markdown("**각 dl 소자가 선택 위치에서 만드는 Bz 계산 과정:**")
     for step in calc_steps:
@@ -106,7 +106,7 @@ ax.grid(True)
 st.pyplot(fig)
 
 # --- 공식과 개념 설명 ---
-with st.expander("📝 관련 공식 및 개념 설명"):
+with st.expander("관련 공식 및 개념 설명"):
     st.markdown("**1️⃣ 원형 코일 중심 Z축 자기장 공식**")
     st.markdown(
         "Bz = μ₀ I N R² / (2 (R² + z²)^(3/2))\n\n"
