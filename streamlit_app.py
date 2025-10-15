@@ -21,8 +21,7 @@ x = st.sidebar.number_input("X 좌표 (m)", min_value=-2.0, max_value=2.0, value
 y = st.sidebar.number_input("Y 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.0, step=0.1, format="%.1f")
 z = st.sidebar.number_input("Z 좌표 (m)", min_value=-1.0, max_value=1.0, value=0.0, step=0.1, format="%.1f")
 
-# 진공 투자율
-mu0 = 4 * np.pi * 1e-7  # H/m
+mu0 = 4 * np.pi * 1e-7  # 진공 투자율
 
 # --- Biot-Savart 법칙 함수 ---
 def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
@@ -65,17 +64,15 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
 # --- 계산 ---
 B_here, calc_steps, dl_positions, dB_vectors = Bz_point_verbose(x, y, z, I, R, N)
 
-# --- 중앙 Z축 자기장 (π 포함) 계산 ---
-if x == 0 and y == 0 and z == 0:
-    # 중앙 계산 공식
-    B_center = f"{N} μ₀ I / (2) = {2*N*I}π × 10^-7 T"
-else:
-    B_center = f"{B_here:.3e} T (근사값)"
+# --- π 포함 식으로 변환 ---
+# B_here = 실제 계산값 (T)
+B_pi_factor = B_here / (np.pi * 1e-7)  # π × 10^-7 T 기준으로 몇 배인지
+B_display = f"{B_pi_factor:.3f} π × 10^-7 T"
 
 # --- 결과 ---
 st.markdown(f"### 📊 측정 결과")
 st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
-st.markdown(f"**Z축 방향 자기장 Bz ≈ {B_center}**")
+st.markdown(f"**Z축 방향 자기장 Bz ≈ {B_display}**")
 
 # --- 계산 과정 보기 ---
 with st.expander("🔍 계산 과정 보기"):
