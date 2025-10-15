@@ -36,19 +36,18 @@ z = st.sidebar.number_input(
 mu0 = 4 * np.pi * 1e-7  # 진공 투자율
 
 # --- Biot-Savart 법칙 기반 Bz 계산 함수 ---
-def Bz_point(x, y, z, I, R, N=1, n_elements=200):
+def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
     """
     XY 평면 원형 코일 중심(0,0) 기준, Z축 방향 자기장 계산
-    Biot-Savart 법칙을 수치적으로 근사
+    Biot-Savart 법칙을 수치적으로 근사하고 계산 과정 기록
     """
-    theta = np.linspace(0, 2*np.pi, n_elements)
+    theta = np.linspace(0, 2*np.pi, n_elements, endpoint=False)
     rx = R * np.cos(theta)
     ry = R * np.sin(theta)
     dlx = -R * np.sin(theta) * (2*np.pi/n_elements)
     dly = R * np.cos(theta) * (2*np.pi/n_elements)
 
     Bz_total = 0.0
-    # 계산 과정 기록
     calc_steps = []
     for i in range(n_elements):
         r_vec = np.array([x - rx[i], y - ry[i], z])
@@ -58,12 +57,23 @@ def Bz_point(x, y, z, I, R, N=1, n_elements=200):
             continue
         dB = (mu0 * I / (4*np.pi)) * np.cross(dl_vec, r_vec) / (r_mag**3)
         Bz_total += dB[2]
-        if i % max(1, n_elements // 10) == 0:  # 일부 단계만 기록
-            calc_steps.append(f"i={i}, dl=({dlx[i]:.3e},{dly[i]:.3e},0), r=({r_vec[0]:.3f},{r_vec[1]:.3f},{r_vec[2]:.3f}), dBz={dB[2]:.3e}")
+
+        # 계산 과정 기록 (실제 선택 위치 값이 어떻게 대입되는지)
+        if i % max(1, n_elements // 10) == 0:  # 단계 일부만 표시
+            step_info = {
+                "i": i,
+                "dl_vector": dl_vec,
+                "r_vector": r_vec,
+                "r_mag": r_mag,
+                "dB_vector": dB,
+                "dBz": dB[2]
+            }
+            calc_steps.append(step_info)
+
     return Bz_total * N, calc_steps
 
 # --- 자기장 계산 ---
-B_here, calc_steps = Bz_point(x, y, z, I, R, N)
+B_here, calc_steps = Bz_point_verbose(x, y, z, I, R, N)
 
 # --- 시각화 ---
 fig, ax = plt.subplots(figsize=(6,6))
@@ -87,9 +97,16 @@ st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
 st.markdown(f"**Z축 방향 자기장 Bz = {B_here:.3e} T**")
 st.caption("Biot-Savart 법칙을 수치적분으로 계산한 값")
 
-# --- 계산 과정 보기 ---
+# --- 계산 과정 보기 (x, y, z 값이 공식에 대입되는 과정) ---
 with st.expander("🔍 계산 과정 보기"):
-    st.markdown("**사용된 공식:** Bz = Σ (μ₀ I / 4π) * (dl × r) / |r|³  (Z축 방향만)")
-    st.markdown("**계산 과정 일부:**")
+    st.markdown("**사용 공식:** Bz = Σ (μ₀ I / 4π) * (dl × r) / |r|³  (Z축 방향만)")
+    st.markdown("**선택 위치 값이 어떻게 대입되는지:**")
     for step in calc_steps:
-        st.text(step)
+        st.markdown(
+            f"i={step['i']} | "
+            f"dl={step['dl_vector']} | "
+            f"r={step['r_vector']} | "
+            f"|r|={step['r_mag']:.3f} | "
+            f"dB={step['dB_vector']} | "
+            f"dBz={step['dBz']:.3e}"
+        )
