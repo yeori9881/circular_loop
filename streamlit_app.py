@@ -21,8 +21,8 @@ y = st.sidebar.number_input("Y 좌표 (m)", min_value=-2.0, max_value=2.0, value
 z = st.sidebar.number_input("Z 좌표 (m)", min_value=-1.0, max_value=1.0, value=0.0, step=0.1, format="%.1f")
 
 # μ₀/4 계산 상수
-mu0_div_4 = 1e-7  # μ₀/4 계산
-pi_symbol = "π"   # 계산 과정에서는 문자로 표현
+mu0_div_4 = 1e-7  # μ₀/4 계산 (실제 계산용)
+pi_symbol = "π"   # 계산 과정에서 문자로 표시
 
 # --- Biot-Savart 법칙 함수 ---
 def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
@@ -68,8 +68,10 @@ B_here, calc_steps, dl_positions, dB_vectors = Bz_point_verbose(x, y, z, I, R, N
 # --- 결과 ---
 st.markdown(f"### 📊 측정 결과")
 st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
-st.markdown(f"**Z축 방향 자기장 Bz = {B_here:.3e} T**")
-st.caption(f"계산식 예시: Bz = Σ ({mu0_div_4}*I/{pi_symbol}) * (dl × r)/|r|³")
+st.markdown(
+    f"**Z축 방향 자기장 Bz ≈ {B_here:.3e} T ≈ {B_here/mu0_div_4:.2f} × 10⁻⁷ μ₀/4{pi_symbol}**"
+)
+st.caption("계산 과정에서는 μ₀/4π 형태로 표현, 실제 계산은 μ₀/4 = 1e-7로 수치 계산됨")
 
 # --- 계산 과정 보기 ---
 with st.expander("🔍 계산 과정 보기"):
@@ -103,24 +105,24 @@ ax.legend()
 ax.grid(True)
 st.pyplot(fig)
 
-# --- 공식 이미지 표시 ---
+# --- 공식과 개념 설명 ---
 with st.expander("📝 관련 공식 및 개념 설명"):
     st.markdown("**1️⃣ 원형 코일 중심 Z축 자기장 공식**")
-    st.image("https://upload.wikimedia.org/wikipedia/commons/8/88/Solenoid_B_field.svg", caption="원형 코일 자기장 개념")
     st.markdown(
         "Bz = μ₀ I N R² / (2 (R² + z²)^(3/2))\n\n"
         "- μ₀: 진공 투자율 (4π×10⁻⁷ H/m)\n"
         "- I: 전류 (A)\n"
         "- N: 코일 감은 수\n"
         "- R: 코일 반지름 (m)\n"
-        "- z: 중심에서 떨어진 거리 (m)"
+        "- z: 중심에서 떨어진 거리 (m)\n"
+        "- 중심에서의 자기장만 구하는 간단 공식"
     )
 
     st.markdown("**2️⃣ Biot-Savart 법칙**")
-    st.image("https://upload.wikimedia.org/wikipedia/commons/5/5d/Biot-Savart_law.svg", caption="Biot-Savart 법칙")
     st.markdown(
         "dB = (μ₀ I / 4π) * (dl × r) / |r|³\n\n"
         "- dl: 미소 전류 요소 벡터\n"
         "- r: 관찰점까지 위치 벡터\n"
-        "- |r|: 거리"
+        "- |r|: 거리\n"
+        "- Z축 방향 자기장은 각 dl 소자 기여 합산"
     )
