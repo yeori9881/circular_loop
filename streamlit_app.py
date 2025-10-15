@@ -10,19 +10,30 @@ st.markdown("""
 전류, 코일 반지름, 감은 수를 조절할 수 있습니다.
 """)
 
-# --- Sidebar: 변수 설정 ---
+# --- Sidebar: 변수 설정 (슬라이더 + 직접 입력) ---
 st.sidebar.header("⚙️ 변수 설정")
-I = st.sidebar.slider("전류 I (A)", 0.1, 10.0, 2.0, 0.1)
-R = st.sidebar.slider("코일 반지름 R (m)", 0.1, 2.0, 0.5, 0.1)
-N = st.sidebar.slider("코일 감은 수 N (회)", 1, 20, 5)
+
+I = st.sidebar.number_input(
+    "전류 I (A)", min_value=0.1, max_value=10.0, value=2.0, step=0.1, format="%.1f"
+)
+R = st.sidebar.number_input(
+    "코일 반지름 R (m)", min_value=0.1, max_value=2.0, value=0.5, step=0.1, format="%.1f"
+)
+N = st.sidebar.number_input(
+    "코일 감은 수 N (회)", min_value=1, max_value=20, value=5, step=1, format="%d"
+)
+
+x = st.sidebar.number_input(
+    "X 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.5, step=0.1, format="%.1f"
+)
+y = st.sidebar.number_input(
+    "Y 좌표 (m)", min_value=-2.0, max_value=2.0, value=0.0, step=0.1, format="%.1f"
+)
+z = st.sidebar.number_input(
+    "Z 좌표 (m)", min_value=-1.0, max_value=1.0, value=0.0, step=0.1, format="%.1f"
+)
 
 mu0 = 4 * np.pi * 1e-7  # 진공 투자율
-
-# --- 마우스로 선택할 위치 ---
-st.markdown("### 📍 측정할 위치 선택")
-x = st.slider("X 좌표 (m)", -2.0, 2.0, 0.5, 0.01)
-y = st.slider("Y 좌표 (m)", -2.0, 2.0, 0.0, 0.01)
-z = st.slider("Z 좌표 (m)", -1.0, 1.0, 0.0, 0.01)
 
 # --- Biot-Savart 법칙 기반 Bz 계산 함수 ---
 def Bz_point(x, y, z, I, R, N=1, n_elements=200):
@@ -31,7 +42,6 @@ def Bz_point(x, y, z, I, R, N=1, n_elements=200):
     Biot-Savart 법칙을 수치적으로 근사
     """
     theta = np.linspace(0, 2*np.pi, n_elements)
-    # 코일 소자 위치
     rx = R * np.cos(theta)
     ry = R * np.sin(theta)
     dlx = -R * np.sin(theta) * (2*np.pi/n_elements)
@@ -45,7 +55,7 @@ def Bz_point(x, y, z, I, R, N=1, n_elements=200):
         if r_mag == 0:
             continue
         dB = (mu0 * I / (4*np.pi)) * np.cross(dl_vec, r_vec) / (r_mag**3)
-        Bz_total += dB[2]  # Z축 방향만 취함
+        Bz_total += dB[2]
     return Bz_total * N
 
 # --- 자기장 계산 ---
@@ -53,11 +63,9 @@ B_here = Bz_point(x, y, z, I, R, N)
 
 # --- 시각화 ---
 fig, ax = plt.subplots(figsize=(6,6))
-# 코일 표시
 circle = plt.Circle((0,0), R, fill=False, color='orange', linewidth=2, label='코일')
 ax.add_patch(circle)
-# 선택 지점 표시
-ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.2f}, {y:.2f}) m')
+ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.1f}, {y:.1f}) m')
 ax.set_xlim(-2, 2)
 ax.set_ylim(-2, 2)
 ax.set_aspect('equal')
@@ -71,6 +79,6 @@ st.pyplot(fig)
 
 # --- 결과 출력 ---
 st.markdown(f"### 📊 측정 결과")
-st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.2f}, {y:.2f}, {z:.2f}) m**")
+st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
 st.markdown(f"**Z축 방향 자기장 Bz = {B_here:.3e} T**")
 st.caption("Biot-Savart 법칙을 수치적분으로 계산한 값")
