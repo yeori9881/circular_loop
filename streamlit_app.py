@@ -61,7 +61,7 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
         dB = (mu0 * I / (4*np.pi)) * np.cross(dl_vec, r_vec) / (r_mag**3)
         Bz_total += dB[2]
 
-        # 기록
+        # 기록 (10개 정도만 추출)
         if i % max(1, n_elements // 10) == 0:
             step_info = {
                 "i": i,
@@ -82,28 +82,6 @@ def Bz_point_verbose(x, y, z, I, R, N=1, n_elements=200):
 # --- 자기장 계산 ---
 B_here, calc_steps, dl_positions, dB_vectors = Bz_point_verbose(x, y, z, I, R, N)
 
-# --- 시각화 ---
-fig, ax = plt.subplots(figsize=(6,6))
-circle = plt.Circle((0,0), R, fill=False, color='orange', linewidth=2, label='코일')
-ax.add_patch(circle)
-ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.1f}, {y:.1f}) m')
-
-# 각 dl 위치에서의 dBz 화살표 (Z축 방향만)
-for (px, py), dBz in zip(dl_positions, dB_vectors):
-    scale = 1e8
-    ax.arrow(px, py, 0, dBz*scale, head_width=0.02, head_length=0.02, fc='blue', ec='blue')
-
-ax.set_xlim(-2, 2)
-ax.set_ylim(-2, 2)
-ax.set_aspect('equal')
-ax.set_xlabel('X (m)')
-ax.set_ylabel('Y (m)')
-ax.set_title("XY 평면에서 원형 코일과 각 dl 소자가 만드는 Bz 화살표")
-ax.legend()
-ax.grid(True)
-
-st.pyplot(fig)
-
 # --- 결과 출력 ---
 st.markdown(f"### 📊 측정 결과")
 st.markdown(f"**선택 위치 (X,Y,Z) = ({x:.1f}, {y:.1f}, {z:.1f}) m**")
@@ -123,8 +101,8 @@ with st.expander("🔍 계산 과정 보기"):
             f"dB={step['dB_vector']} | "
             f"dBz={step['dBz']:.3e}"
         )
-        
-# --- 시각화 ---
+
+# --- 시각화 (화살표 ON/OFF) ---
 show_arrows = st.checkbox("💠 dl 소자 화살표 표시", value=True)
 
 fig, ax = plt.subplots(figsize=(6,6))
@@ -132,7 +110,6 @@ circle = plt.Circle((0,0), R, fill=False, color='orange', linewidth=2, label='�
 ax.add_patch(circle)
 ax.plot(x, y, 'ro', markersize=8, label=f'측정 위치 ({x:.1f}, {y:.1f}) m')
 
-# 체크박스가 켜져 있을 때만 dl 화살표 표시
 if show_arrows:
     for (px, py), dBz in zip(dl_positions, dB_vectors):
         scale = 1e8
@@ -148,4 +125,3 @@ ax.legend()
 ax.grid(True)
 
 st.pyplot(fig)
-
