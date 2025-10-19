@@ -106,16 +106,19 @@ B_2n_pi = B_2n / pi_unit
 rel_diff = abs(B_2n - B_n) / (abs(B_2n)+1e-30)
 
 # -----------------------
-# 출력
+# 출력 (한 줄 요약)
 # -----------------------
+pi_unit = np.pi * 1e-7
+B_n_pi = B_n / pi_unit
+B_2n_pi = B_2n / pi_unit
+rel_diff = abs(B_2n - B_n) / (abs(B_2n)+1e-30)
+
+# 한 줄 요약 형식 출력
 st.markdown("### 측정 결과 (정밀 계산)")
-st.write(f"선택 위치 (X,Y,Z) = ({x:.4f}, {y:.4f}, {z:.4f}) m")
-st.write(f"전류 I = {I:.4f} A, 반지름 R = {R:.4f} m, 감은수 N = {N:d}")
-st.write(f"샘플링 = {sampling}, n = {int(n_elements)}, eps_used = {eps_used:.6e} m")
-st.markdown("---")
-st.write(f"Bz (n) = {B_n:.12e} T | π×10^-7 단위 = {B_n_pi:.6f}")
-st.write(f"Bz (2n) = {B_2n:.12e} T | π×10^-7 단위 = {B_2n_pi:.6f}")
-st.write(f"상대차이 = {rel_diff:.3e}")
+st.write(f"선택 위치 (X,Y,Z) = ({x:.4f}, {y:.4f}, {z:.4f}) m "
+         f"Z축 방향 자기장 Bz ≈ {B_n_pi:.3f} π × 10^-7 T "
+         f"(상대차이 2n-n: {rel_diff:.3e})")
+
 
 # -----------------------
 # 계산 과정(expander)
