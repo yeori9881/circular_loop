@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use("Agg")
 st.set_page_config(page_title="원형 코일 2D 자기장 시뮬레이터", layout="wide")
 
-st.title("원형 코일 2D 자기장 시뮬레이터 — 개선형)")
+st.title("원형 코일 2D 자기장 시뮬레이터")
 st.markdown("""
 정밀도를 올리기 위해 벡터화된 수치적분을 사용합니다.  
 `샘플링 방식`, `분할수(n)`, `근거리 컷오프(eps)`를 조절해 수렴을 확인하세요.
