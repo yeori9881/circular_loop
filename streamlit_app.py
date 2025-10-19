@@ -46,13 +46,13 @@ mu0 = 4 * np.pi * 1e-7
 # 벡터화된 Biot-Savart (Z 성분)
 # -----------------------
 def Bz_vectorized(rho_x, rho_y, rho_z, I, R, N=1, n=20000, sampling="midpoint", eps=0.0):
-    # theta 샘플
+    # theta, dtheta 정의
     if sampling == "endpoint":
         theta = np.linspace(0.0, 2*np.pi, n, endpoint=False)
         dtheta = 2*np.pi / n
-    else:
-        dtheta = np.linspace(0.0, 2*np.pi, n, endpoint=False) + np.pi/n
+    else:  # midpoint
         dtheta = 2*np.pi / n
+        theta = np.linspace(0.0, 2*np.pi, n, endpoint=False) + 0.5*dtheta
 
     # 소자 위치와 dl
     rx = R * np.cos(theta)
@@ -61,7 +61,7 @@ def Bz_vectorized(rho_x, rho_y, rho_z, I, R, N=1, n=20000, sampling="midpoint", 
     dly = R * np.cos(theta) * dtheta
     dlz = np.zeros_like(dlx)
 
-    # r 벡터 components
+    # 관찰점까지 벡터
     rx_to_obs = rho_x - rx
     ry_to_obs = rho_y - ry
     rz_to_obs = np.full_like(rx_to_obs, rho_z)
@@ -88,8 +88,8 @@ def Bz_vectorized(rho_x, rho_y, rho_z, I, R, N=1, n=20000, sampling="midpoint", 
         })
 
     # 전체 dl, dBz 배열 반환 (시각화용)
-    dl_array = np.column_stack((dlx, dly, dlz))
-    dB_array = dBz
+    dl_array = np.column_stack((rx, ry, np.zeros_like(rx)))  # dl 위치
+    dB_array = dBz  # dBz 값
 
     return Bz_total, calc_steps, dl_array, dB_array
 
@@ -139,7 +139,7 @@ if show_arrows:
     max_abs = np.max(np.abs(dB_vis)) if dB_vis.size>0 else 1.0
     scale = 0.15 / max_abs if max_abs != 0 else 1.0
     for dl_vec, db in zip(dl_vis, dB_vis):
-        px, py = dl_vec[0]+0, dl_vec[1]+0
+        px, py = dl_vec[0], dl_vec[1]
         ax.arrow(px, py, 0.0, db*scale, head_width=0.02, head_length=0.02, fc='blue', ec='blue', alpha=0.8)
 
 ax.set_xlim(-1.5*R, 1.5*R)
